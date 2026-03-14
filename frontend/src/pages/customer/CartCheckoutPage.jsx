@@ -55,27 +55,27 @@ export default function CartCheckoutPage() {
       await fetchCart(); // refresh cart (should be empty now)
       addToast('Order placed successfully!');
 
-      // If eSewa, initiate payment flow
-      if (paymentMethod === 'esewa' && order) {
+      // If IME Pay, initiate payment flow
+      if (paymentMethod === 'imepay' && order) {
         try {
-          const payRes = await api.initiateEsewa({ orderId: order.id }, accessToken);
+          const payRes = await api.initiateImepay({ orderId: order.id }, accessToken);
           const form = payRes.data;
-          // Build and submit eSewa form
-          const esewaForm = document.createElement('form');
-          esewaForm.method = 'POST';
-          esewaForm.action = form.paymentUrl;
+          // Build and submit IME Pay form
+          const imepayForm = document.createElement('form');
+          imepayForm.method = 'POST';
+          imepayForm.action = form.paymentUrl;
           Object.entries(form.formData).forEach(([key, val]) => {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = key;
             input.value = val;
-            esewaForm.appendChild(input);
+            imepayForm.appendChild(input);
           });
-          document.body.appendChild(esewaForm);
-          esewaForm.submit();
+          document.body.appendChild(imepayForm);
+          imepayForm.submit();
           return;
         } catch (err) {
-          addToast('eSewa initiation failed. You can pay later from order details.', 'error');
+          addToast('IME Pay initiation failed. You can pay later from order details.', 'error');
         }
       }
 
@@ -105,7 +105,7 @@ export default function CartCheckoutPage() {
     return (
       <div className="max-w-md mx-auto text-center py-12 page-enter">
         <p className="text-charcoal/60">Your cart is empty.</p>
-        <Link to="/customer/medicines" className="text-primary font-medium mt-2 inline-block">Browse medicines</Link>
+        <Link to="/medicines" className="text-primary font-medium mt-2 inline-block">Browse medicines</Link>
       </div>
     );
   }
@@ -133,7 +133,12 @@ export default function CartCheckoutPage() {
             <ul className="divide-y divide-charcoal/10">
               {items.map((item) => (
                 <li key={item.medicineId} className="flex items-center gap-4 p-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">💊</div>
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-charcoal/5">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.medicineName} className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling.style.display = 'flex'; }} />
+                    ) : null}
+                    <div className={`h-full w-full items-center justify-center text-2xl ${item.imageUrl ? 'hidden' : 'flex'}`}>💊</div>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-charcoal">{item.medicineName}</p>
                     <p className="text-sm text-charcoal/60">Rs. {item.price} each</p>

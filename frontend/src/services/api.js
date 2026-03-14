@@ -105,6 +105,22 @@ export const api = {
 
   clearCart: (token) => request("/cart", { method: "DELETE", token }),
 
+  // ─── Wishlist ───
+  getWishlist: (token) => request("/wishlist", { token }),
+
+  getWishlistIds: (token) => request("/wishlist/ids", { token }),
+
+  addToWishlist: (body, token) =>
+    request("/wishlist/items", { method: "POST", body, token }),
+
+  toggleWishlist: (body, token) =>
+    request("/wishlist/toggle", { method: "POST", body, token }),
+
+  removeFromWishlist: (medicineId, token) =>
+    request(`/wishlist/items/${medicineId}`, { method: "DELETE", token }),
+
+  clearWishlist: (token) => request("/wishlist", { method: "DELETE", token }),
+
   // ─── Orders ───
   checkout: (body, token) =>
     request("/orders/checkout", { method: "POST", body, token }),
@@ -132,11 +148,11 @@ export const api = {
     request(`/orders/${id}/cancel`, { method: "POST", token }),
 
   // ─── Payments ───
-  initiateEsewa: (body, token) =>
-    request("/payments/esewa/initiate", { method: "POST", body, token }),
+  initiateImepay: (body, token) =>
+    request("/payments/imepay/initiate", { method: "POST", body, token }),
 
-  verifyEsewa: (body, token) =>
-    request("/payments/esewa/verify", { method: "POST", body, token }),
+  verifyImepay: (body, token) =>
+    request("/payments/imepay/verify", { method: "POST", body, token }),
 
   getOrderPayments: (orderId, token) =>
     request(`/payments/order/${orderId}`, { token }),

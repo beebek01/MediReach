@@ -5,9 +5,10 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 import { ToastProvider } from "./context/ToastContext";
 import { NotificationProvider } from "./context/NotificationContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import { ROLES } from "./data/constants";
 
@@ -25,8 +26,9 @@ import PrescriptionUploadPage from "./pages/customer/PrescriptionUploadPage";
 import OrderTrackingPage from "./pages/customer/OrderTrackingPage";
 import MyOrdersPage from "./pages/customer/MyOrdersPage";
 import CustomerProfilePage from "./pages/customer/CustomerProfilePage";
-import EsewaSuccessPage from "./pages/customer/EsewaSuccessPage";
-import EsewaFailurePage from "./pages/customer/EsewaFailurePage";
+import ImepaySuccessPage from "./pages/customer/ImepaySuccessPage";
+import ImepayFailurePage from "./pages/customer/ImepayFailurePage";
+import WishlistPage from "./pages/customer/WishlistPage";
 
 import PharmacistDashboard from "./pages/pharmacist/PharmacistDashboard";
 import InventoryManagementPage from "./pages/pharmacist/InventoryManagementPage";
@@ -47,6 +49,26 @@ const router = createBrowserRouter([
   { path: "/reset-password", element: <ResetPasswordPage /> },
 
   {
+    path: "/medicines",
+    element: <DashboardLayout />,
+    children: [
+      {
+        index: true,
+        element: <MedicineCatalog />,
+        handle: {
+          title: "Medicine Catalog",
+          searchPlaceholder: "Search medicines...",
+        },
+      },
+      {
+        path: ":id",
+        element: <MedicineDetailPage />,
+        handle: { title: "Medicine Details" },
+      },
+    ],
+  },
+
+  {
     path: "/customer",
     element: (
       <ProtectedRoute allowedRoles={[ROLES.CUSTOMER]}>
@@ -58,19 +80,6 @@ const router = createBrowserRouter([
         index: true,
         element: <CustomerDashboard />,
         handle: { title: "Dashboard" },
-      },
-      {
-        path: "medicines",
-        element: <MedicineCatalog />,
-        handle: {
-          title: "Medicine Catalog",
-          searchPlaceholder: "Search medicines...",
-        },
-      },
-      {
-        path: "medicines/:id",
-        element: <MedicineDetailPage />,
-        handle: { title: "Medicine Details" },
       },
       {
         path: "cart",
@@ -98,14 +107,19 @@ const router = createBrowserRouter([
         handle: { title: "Profile" },
       },
       {
-        path: "payment/esewa/success",
-        element: <EsewaSuccessPage />,
-        handle: { title: "eSewa Payment" },
+        path: "wishlist",
+        element: <WishlistPage />,
+        handle: { title: "My Wishlist" },
       },
       {
-        path: "payment/esewa/failure",
-        element: <EsewaFailurePage />,
-        handle: { title: "eSewa Payment" },
+        path: "payment/imepay/success",
+        element: <ImepaySuccessPage />,
+        handle: { title: "IME Pay Payment" },
+      },
+      {
+        path: "payment/imepay/failure",
+        element: <ImepayFailurePage />,
+        handle: { title: "IME Pay Payment" },
       },
     ],
   },
@@ -196,7 +210,9 @@ function App() {
       <ToastProvider>
         <NotificationProvider>
           <CartProvider>
-            <RouterProvider router={router} />
+            <WishlistProvider>
+              <RouterProvider router={router} />
+            </WishlistProvider>
           </CartProvider>
         </NotificationProvider>
       </ToastProvider>

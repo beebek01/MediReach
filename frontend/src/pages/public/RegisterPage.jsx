@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";import { useToast } from '../../context/ToastContext';import ProgressBar from "../../components/ui/ProgressBar";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from '../../context/ToastContext';
+import ProgressBar from "../../components/ui/ProgressBar";
+import logo from '../../assets/images/logo.png';
+import doctorImg from '../../assets/images/doctor.jpg';
 
 const STEPS = [
   { id: 1, title: "Personal Info", fields: ["name", "email", "password"] },
@@ -229,30 +233,39 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* ── Left Panel ──────────────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-charcoal text-cream flex-col justify-between p-10">
-        <Link to="/" className="font-fraunces text-2xl font-semibold italic">
-          MediReach
+      <div className="hidden lg:flex lg:w-1/2 bg-charcoal text-cream flex-col justify-between p-12 relative overflow-hidden">
+        {/* Full screen background image */}
+        <img 
+          src={doctorImg} 
+          alt="Doctor" 
+          className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent z-0"></div>
+
+        <Link to="/" className="inline-block relative z-10 transition-transform hover:scale-105 duration-300">
+          <img src={logo} alt="MediReach Logo" className="h-16 md:h-20 w-auto bg-white p-2 rounded-2xl shadow-md" />
         </Link>
-        <div>
-          <p className="font-fraunces text-3xl font-semibold leading-snug">
+        <div className="relative z-10 flex-1 flex flex-col justify-end pb-12">
+          <p className="font-fraunces text-4xl font-bold leading-tight drop-shadow-lg">
             Create your account
           </p>
-          <p className="mt-3 text-cream/70 leading-relaxed">
+          <p className="mt-4 text-cream/90 text-lg leading-relaxed font-light drop-shadow-md">
             Join Nepal's trusted online pharmacy.
           </p>
+
           <div className="mt-8 space-y-4">
             {STEPS.map((s) => (
               <div
                 key={s.id}
-                className={`flex items-center gap-3 transition-opacity ${step >= s.id ? "opacity-100" : "opacity-40"}`}
+                className={`flex items-center gap-3 transition-opacity ${step >= s.id ? "opacity-100" : "opacity-50"}`}
               >
                 <div
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                     step > s.id
                       ? "border-primary bg-primary text-white"
                       : step === s.id
-                        ? "border-primary bg-primary/20 text-primary"
-                        : "border-cream/30"
+                        ? "border-primary bg-primary/40 text-white backdrop-blur-sm"
+                        : "border-cream/50 bg-black/20 backdrop-blur-sm"
                   }`}
                 >
                   {step > s.id ? (
@@ -273,45 +286,51 @@ export default function RegisterPage() {
                     s.id
                   )}
                 </div>
-                <span className="font-medium">{s.title}</span>
+                <span className="font-medium drop-shadow-md">{s.title}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="flex gap-6 text-sm text-cream/60">
+        <div className="flex gap-8 text-sm text-cream/90 relative z-10 font-medium pt-4 border-t border-white/10">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+            <span className="inline-block w-2 h-2 rounded-full bg-primary shadow-sm" />
             Free account
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+            <span className="inline-block w-2 h-2 rounded-full bg-primary shadow-sm" />
             No credit card required
           </span>
         </div>
       </div>
 
       {/* ── Right Panel (form) ─────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center p-6 sm:p-10 lg:p-16 bg-cream">
-        <div className="max-w-md w-full mx-auto">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center p-4 sm:p-8 lg:p-12 bg-gradient-to-br from-cream to-white relative overflow-hidden">
+        {/* Soft decorative background blurs for the light side */}
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-pulse-slow pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-secondary/10 rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-pulse-slow pointer-events-none" style={{ animationDelay: "2s" }} />
+
+        <div className="max-w-xl w-full mx-auto relative z-10 bg-white/70 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.04)] border border-white rounded-[2rem] p-8 sm:p-10 transition-all duration-500 hover:shadow-[0_8px_50px_rgba(0,0,0,0.06)]">
           {/* Mobile logo */}
           <Link
             to="/"
-            className="lg:hidden font-fraunces text-xl font-semibold italic text-charcoal mb-6 inline-block"
+            className="lg:hidden mb-8 flex justify-center w-full transition-transform hover:scale-105"
           >
-            MediReach
+            <img src={logo} alt="MediReach Logo" className="h-12 sm:h-14 w-auto bg-white p-2 rounded-2xl shadow-sm" />
           </Link>
 
-          <h1 className="font-fraunces text-2xl font-bold text-charcoal">
-            Register
-          </h1>
-          <p className="mt-1 text-sm text-charcoal/60">
-            Create your MediReach account
-          </p>
+          <div className="text-center lg:text-left mb-6">
+            <h1 className="font-fraunces text-3xl font-bold text-charcoal tracking-tight">
+              Register
+            </h1>
+            <p className="mt-2 text-sm text-charcoal/60">
+              Create your MediReach account
+            </p>
+          </div>
 
           {/* ── OAuth (only on step 1 & credentials configured) ──── */}
           {step === 1 && isOAuthConfigured && (
             <>
-              <div className="mt-6 space-y-3">
+              <div className="space-y-3">
                 {GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("_here") ? (
                   <div ref={googleBtnRef} className="w-full min-h-[44px]" />
                 ) : null}
@@ -321,10 +340,10 @@ export default function RegisterPage() {
                     type="button"
                     onClick={handleAppleSignIn}
                     disabled={isDisabled}
-                    className="w-full flex items-center justify-center gap-3 rounded-lg bg-charcoal py-2.5 px-4 text-sm font-medium text-white hover:bg-charcoal/90 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-3 rounded-xl border border-charcoal/10 bg-white/50 backdrop-blur-sm py-3 px-4 text-sm font-medium text-charcoal hover:bg-white hover:shadow-sm transition-all disabled:opacity-50"
                   >
                     {oauthLoading === "apple" ? (
-                      <span className="inline-block h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="inline-block h-5 w-5 border-2 border-charcoal/30 border-t-charcoal rounded-full animate-spin" />
                     ) : (
                       <AppleIcon />
                     )}
@@ -356,100 +375,107 @@ export default function RegisterPage() {
 
           {/* ── Step 1: Personal Info ──────────────────────────── */}
           {step === 1 && (
-            <div className="mt-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Full name
-                </label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                  disabled={isDisabled}
-                  className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors disabled:opacity-50"
-                  placeholder="Enter your full name"
-                />
-                {errors.name && (
-                  <p className="text-sm text-soft-red mt-1">{errors.name}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, email: e.target.value }))
-                  }
-                  disabled={isDisabled}
-                  className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors disabled:opacity-50"
-                  placeholder="you@example.com"
-                />
-                {errors.email && (
-                  <p className="text-sm text-soft-red mt-1">{errors.email}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Password
-                </label>
-                <div className="relative">
+            <div className="mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-charcoal mb-1.5 pl-1">
+                    Full name
+                  </label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
+                    type="text"
+                    value={form.name}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, password: e.target.value }))
+                      setForm((f) => ({ ...f, name: e.target.value }))
                     }
                     disabled={isDisabled}
-                    className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 pr-11 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors disabled:opacity-50"
-                    placeholder="Min. 8 characters"
+                    className="w-full rounded-xl border border-charcoal/10 bg-white/70 px-4 py-3 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-300 disabled:opacity-50 shadow-inner"
+                    placeholder="Enter your full name"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    tabIndex={-1}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal/70 transition-colors"
-                  >
-                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                  </button>
+                  {errors.name && (
+                    <p className="text-sm text-soft-red mt-1 pl-1">{errors.name}</p>
+                  )}
                 </div>
-                {errors.password && (
-                  <p className="text-sm text-soft-red mt-1">
-                    {errors.password}
-                  </p>
-                )}
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-charcoal mb-1.5 pl-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, email: e.target.value }))
+                    }
+                    disabled={isDisabled}
+                    className="w-full rounded-xl border border-charcoal/10 bg-white/70 px-4 py-3 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-300 disabled:opacity-50 shadow-inner"
+                    placeholder="you@example.com"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-soft-red mt-1 pl-1">{errors.email}</p>
+                  )}
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-charcoal mb-1.5 pl-1">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, password: e.target.value }))
+                      }
+                      disabled={isDisabled}
+                      className="w-full rounded-xl border border-charcoal/10 bg-white/70 px-4 py-3 pr-11 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-300 disabled:opacity-50 shadow-inner"
+                      placeholder="Min. 8 characters"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      tabIndex={-1}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal/70 transition-colors bg-transparent border-none p-1"
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-sm text-soft-red mt-1 pl-1">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {/* ── Step 2: Contact Details ───────────────────────── */}
           {step === 2 && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-8 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Phone
+                <label className="block text-sm font-medium text-charcoal mb-1.5 pl-1">
+                  Phone Number
                 </label>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, phone: e.target.value }))
-                  }
-                  disabled={isDisabled}
-                  className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors disabled:opacity-50"
-                  placeholder="98xxxxxxxx"
-                />
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/50 font-medium">+977</span>
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, phone: e.target.value }))
+                    }
+                    disabled={isDisabled}
+                    className="w-full rounded-xl border border-charcoal/10 bg-white/70 pl-16 pr-4 py-3 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-300 disabled:opacity-50 shadow-inner"
+                    placeholder="98xxxxxxxx"
+                  />
+                </div>
                 {errors.phone && (
-                  <p className="text-sm text-soft-red mt-1">{errors.phone}</p>
+                  <p className="text-sm text-soft-red mt-1 pl-1">{errors.phone}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Address
+                <label className="block text-sm font-medium text-charcoal mb-1.5 pl-1">
+                  Delivery Address
                 </label>
                 <textarea
                   value={form.address}
@@ -458,11 +484,11 @@ export default function RegisterPage() {
                   }
                   rows={3}
                   disabled={isDisabled}
-                  className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none resize-none transition-colors disabled:opacity-50"
-                  placeholder="Itahari, Nepal"
+                  className="w-full rounded-xl border border-charcoal/10 bg-white/70 px-4 py-3 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-none transition-all duration-300 disabled:opacity-50 shadow-inner"
+                  placeholder="Street, City, District"
                 />
                 {errors.address && (
-                  <p className="text-sm text-soft-red mt-1">{errors.address}</p>
+                  <p className="text-sm text-soft-red mt-1 pl-1">{errors.address}</p>
                 )}
               </div>
             </div>
@@ -523,7 +549,7 @@ export default function RegisterPage() {
                 type="button"
                 onClick={prev}
                 disabled={isDisabled}
-                className="rounded-lg border border-charcoal/20 px-4 py-2.5 font-medium text-charcoal hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="rounded-xl border border-charcoal/20 px-6 py-3 font-medium text-charcoal hover:bg-charcoal/5 transition-colors disabled:opacity-50"
               >
                 Back
               </button>
@@ -532,7 +558,7 @@ export default function RegisterPage() {
               type="button"
               onClick={next}
               disabled={isDisabled}
-              className="flex-1 rounded-lg bg-primary px-6 py-2.5 font-medium text-white hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-3 font-medium text-white shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && (
                 <span className="inline-block h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -3,16 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../ui/Avatar";
 import { ROLES } from "../../data/constants";
+import logo from '../../assets/images/logo.png';
 
-const customerNav = [
-  { to: "/customer", label: "Dashboard", icon: "📊" },
-  { to: "/customer/medicines", label: "Medicines", icon: "💊" },
-  { to: "/customer/cart", label: "Cart", icon: "🛒", badge: "cart" },
-  { to: "/customer/prescriptions", label: "Prescriptions", icon: "📄" },
-  { to: "/customer/orders", label: "My Orders", icon: "📋" },
-  { to: "/customer/track", label: "Track Order", icon: "🚚" },
-  { to: "/customer/profile", label: "Profile", icon: "👤" },
-];
 
 const pharmacistNav = [
   { to: "/pharmacist", label: "Dashboard", icon: "📊" },
@@ -36,10 +28,11 @@ const adminNav = [
   { to: "/admin/profile", label: "Profile", icon: "👤" },
 ];
 
+
 function getNav(role) {
   if (role === ROLES.ADMIN) return adminNav;
   if (role === ROLES.PHARMACIST) return pharmacistNav;
-  return customerNav;
+  return [];
 }
 
 export default function Sidebar({ badgeCounts = {} }) {
@@ -48,15 +41,15 @@ export default function Sidebar({ badgeCounts = {} }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  if (!user) return null;
+  if (!user || user.role === ROLES.CUSTOMER) return null;
 
-  const nav = getNav(user.role);
+  const nav = getNav(user?.role);
   const base =
-    user.role === ROLES.CUSTOMER
-      ? "/customer"
-      : user.role === ROLES.PHARMACIST
-        ? "/pharmacist"
-        : "/admin";
+    user?.role === ROLES.PHARMACIST
+      ? "/pharmacist"
+      : user?.role === ROLES.ADMIN
+        ? "/admin"
+        : "";
 
   const handleLogout = () => {
     logout();
@@ -68,22 +61,19 @@ export default function Sidebar({ badgeCounts = {} }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 rounded-lg bg-charcoal text-cream p-2"
+        className="lg:hidden fixed top-4 left-4 z-50 rounded-lg bg-charcoal text-cream p-2 shadow-lg"
         aria-label="Open menu"
       >
         ☰
       </button>
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-charcoal text-cream flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-[60] w-64 bg-charcoal border-r border-white/5 shadow-2xl text-cream flex flex-col transition-transform duration-300 lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <Link
-            to={base}
-            className="font-fraunces text-xl font-semibold italic text-cream"
-          >
-            MediReach
+        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-charcoal">
+          <Link to={base} className="flex items-center shrink-0">
+            <img src={logo} alt="MediReach Logo" className="h-16 sm:h-20 w-auto bg-white p-2 rounded-2xl shadow-sm" />
           </Link>
           <button
             type="button"
@@ -94,7 +84,7 @@ export default function Sidebar({ badgeCounts = {} }) {
             ✕
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1 bg-charcoal">
           {nav.map((item) => {
             const isActive =
               location.pathname === item.to ||
@@ -104,7 +94,9 @@ export default function Sidebar({ badgeCounts = {} }) {
                 ? badgeCounts.cart
                 : item.badge === "rx"
                   ? badgeCounts.rx
-                  : null;
+                  : item.badge === "wishlist"
+                    ? badgeCounts.wishlist
+                    : null;
             return (
               <Link
                 key={item.to}
@@ -112,8 +104,8 @@ export default function Sidebar({ badgeCounts = {} }) {
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-primary text-white"
-                    : "text-cream/80 hover:bg-white/10"
+                    ? "bg-primary text-cream shadow-md shadow-primary/20 translate-x-1"
+                    : "text-cream hover:bg-white/5 hover:translate-x-1"
                 }`}
               >
                 <span>{item.icon}</span>
@@ -127,7 +119,7 @@ export default function Sidebar({ badgeCounts = {} }) {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-white/10 bg-charcoal">
           <Link
             to={`${base}/profile`}
             onClick={() => setOpen(false)}
@@ -135,7 +127,7 @@ export default function Sidebar({ badgeCounts = {} }) {
           >
             <Avatar name={user.name} size="sm" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium truncate">{user.name}</p>
+              <p className="text-sm font-medium text-cream truncate">{user.name}</p>
               <p className="text-xs text-cream/60 truncate">{user.email}</p>
             </div>
           </Link>

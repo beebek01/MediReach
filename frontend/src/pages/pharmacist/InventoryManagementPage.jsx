@@ -44,7 +44,7 @@ export default function InventoryManagementPage() {
       price: String(m.price),
       stock: String(m.stock),
       expiryDate: m.expiryDate || '',
-      requiresPrescription: m.requiresPrescription || m.prescriptionRequired || false,
+      requiresPrescription: m.requiresPrescription || false,
       description: m.description || '',
     });
     setModalOpen(true);

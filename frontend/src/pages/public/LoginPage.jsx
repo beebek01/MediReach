@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import logo from '../../assets/images/logo.png';
+import doctorImg from '../../assets/images/doctor.jpg';
 
 const ROLES = { CUSTOMER: 'customer', PHARMACIST: 'pharmacist', ADMIN: 'admin' };
 
@@ -175,51 +177,65 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* ── Left Panel ─────────────────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 bg-charcoal text-cream flex-col justify-between p-10">
-        <Link to="/" className="font-fraunces text-2xl font-semibold italic">
-          MediReach
+      <div className="hidden lg:flex lg:w-1/2 bg-charcoal text-cream flex-col justify-between p-12 relative overflow-hidden">
+        {/* Full screen background image */}
+        <img 
+          src={doctorImg} 
+          alt="Doctor" 
+          className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent z-0"></div>
+
+        <Link to="/" className="inline-block relative z-10 transition-transform hover:scale-105 duration-300">
+          <img src={logo} alt="MediReach Logo" className="h-16 md:h-20 w-auto bg-white p-2 rounded-2xl shadow-md" />
         </Link>
-        <div>
-          <p className="font-fraunces text-3xl font-semibold leading-snug">
+        <div className="relative z-10 mb-10 flex-1 flex flex-col justify-end">
+          <p className="font-fraunces text-4xl font-bold leading-tight drop-shadow-lg">
             Your trusted pharmacy,
             <br />
             one click away.
           </p>
-          <p className="mt-3 text-cream/70 leading-relaxed">
-            Sign in to order medicines, track deliveries, and manage prescriptions — all from one place.
+          <p className="mt-4 text-cream/90 text-lg leading-relaxed max-w-md font-light drop-shadow-md">
+            Sign in to order medicines, track deliveries, and manage prescriptions — all from one beautifully designed dashboard.
           </p>
         </div>
-        <div className="flex gap-6 text-sm text-cream/60">
+        <div className="flex gap-8 text-sm text-cream/90 relative z-10 font-medium pt-4 border-t border-white/10">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+            <span className="inline-block w-2 h-2 rounded-full bg-primary shadow-sm" />
             Verified medicines
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+            <span className="inline-block w-2 h-2 rounded-full bg-primary shadow-sm" />
             Secure payments
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary" />
+            <span className="inline-block w-2 h-2 rounded-full bg-primary shadow-sm" />
             Fast delivery
           </span>
         </div>
       </div>
 
       {/* ── Right Panel (form) ─────────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center p-6 sm:p-10 lg:p-16 bg-cream">
-        <div className="max-w-md w-full mx-auto">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center p-4 sm:p-8 lg:p-12 bg-gradient-to-br from-cream to-white relative overflow-hidden">
+        {/* Soft decorative background blurs for the light side */}
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-pulse-slow pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-secondary/10 rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-pulse-slow pointer-events-none" style={{ animationDelay: "2s" }} />
+
+        <div className="max-w-md w-full mx-auto relative z-10 bg-white/70 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.04)] border border-white rounded-[2rem] p-8 sm:p-10 transition-all duration-500 hover:shadow-[0_8px_50px_rgba(0,0,0,0.06)]">
           {/* Mobile logo */}
-          <Link to="/" className="lg:hidden font-fraunces text-xl font-semibold italic text-charcoal mb-6 inline-block">
-            MediReach
+          <Link to="/" className="lg:hidden mb-8 flex justify-center w-full transition-transform hover:scale-105">
+            <img src={logo} alt="MediReach Logo" className="h-12 sm:h-14 w-auto bg-white p-2 rounded-2xl shadow-sm" />
           </Link>
 
-          <h1 className="font-fraunces text-2xl font-bold text-charcoal">Welcome back</h1>
-          <p className="mt-1 text-sm text-charcoal/60">Sign in to continue to MediReach</p>
+          <div className="text-center lg:text-left mb-6">
+            <h1 className="font-fraunces text-3xl font-bold text-charcoal tracking-tight">Welcome back</h1>
+            <p className="mt-2 text-sm text-charcoal/60">Sign in to continue to MediReach</p>
+          </div>
 
           {/* ── OAuth Buttons (only if credentials configured) ───── */}
           {isOAuthConfigured && (
             <>
-              <div className="mt-6 space-y-3">
+              <div className="space-y-3">
                 {/* Google - rendered by GIS SDK or fallback button */}
                 {GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes('_here') ? (
                   <div ref={googleBtnRef} className="w-full min-h-[44px]" />
@@ -231,10 +247,10 @@ export default function LoginPage() {
                     type="button"
                     onClick={handleAppleSignIn}
                     disabled={isDisabled}
-                    className="w-full flex items-center justify-center gap-3 rounded-lg bg-charcoal py-2.5 px-4 text-sm font-medium text-white hover:bg-charcoal/90 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-3 rounded-xl border border-charcoal/10 bg-white/50 backdrop-blur-sm py-3 px-4 text-sm font-medium text-charcoal hover:bg-white hover:shadow-sm transition-all disabled:opacity-50"
                   >
                     {oauthLoading === 'apple' ? (
-                      <span className="inline-block h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="inline-block h-5 w-5 border-2 border-charcoal/30 border-t-charcoal rounded-full animate-spin" />
                     ) : (
                       <AppleIcon />
                     )}
@@ -258,25 +274,26 @@ export default function LoginPage() {
           )}
 
           {/* ── Email / Password Form ──────────────────────────────── */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-charcoal mb-1">Email</label>
+              <label className="block text-sm font-medium text-charcoal mb-1.5 pl-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isDisabled}
-                className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors disabled:opacity-50"
+                className="w-full rounded-xl border border-charcoal/10 bg-white/70 px-4 py-3 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-300 disabled:opacity-50 shadow-inner"
                 placeholder="you@example.com"
               />
             </div>
+            
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5 pl-1 pr-1">
                 <label className="text-sm font-medium text-charcoal">Password</label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs font-medium text-primary hover:text-primary-dark hover:underline transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -288,14 +305,14 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isDisabled}
-                  className="w-full rounded-lg border border-charcoal/20 bg-white px-4 py-2.5 pr-11 text-charcoal placeholder-charcoal/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors disabled:opacity-50"
+                  className="w-full rounded-xl border border-charcoal/10 bg-white/70 px-4 py-3 pr-11 text-charcoal placeholder-charcoal/40 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-300 disabled:opacity-50 shadow-inner"
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal/70 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal/70 transition-colors bg-transparent border-none p-1"
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
@@ -304,7 +321,7 @@ export default function LoginPage() {
 
             {/* Error */}
             {error && (
-              <div className="flex items-start gap-2 rounded-lg bg-soft-red/5 border border-soft-red/20 px-3 py-2.5">
+              <div className="flex items-start gap-2 rounded-lg bg-soft-red/5 border border-soft-red/20 px-3 py-2.5 mt-2">
                 <svg className="w-4 h-4 text-soft-red mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
@@ -315,7 +332,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isDisabled}
-              className="w-full rounded-lg bg-primary py-2.5 font-medium text-white hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full rounded-xl bg-gradient-to-r from-primary to-secondary py-3 font-medium text-white hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {loading && (
                 <span className="inline-block h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

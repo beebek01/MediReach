@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function Modal({ open, onClose, title, children, size = 'md' }) {
   useEffect(() => {
@@ -10,8 +11,8 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
 
   const sizeClass = size === 'sm' ? 'max-w-sm' : size === 'lg' ? 'max-w-2xl' : 'max-w-md';
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-charcoal/50 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div
         className={`relative w-full ${sizeClass} rounded-xl bg-cream shadow-card-hover animate-fade-up border border-charcoal/10`}
@@ -32,6 +33,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
         )}
         <div className="p-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

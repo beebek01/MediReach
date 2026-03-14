@@ -43,7 +43,7 @@ export default function TopBar({
   };
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-charcoal/10 bg-cream/95 backdrop-blur px-4 py-3 lg:pl-4 lg:pr-6">
+    <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-white/40 glass sm:my-2 sm:mx-4 sm:rounded-2xl px-4 py-3 lg:px-6 transition-all duration-300">
       <h1 className="font-fraunces text-xl font-semibold text-charcoal truncate">
         {title}
       </h1>

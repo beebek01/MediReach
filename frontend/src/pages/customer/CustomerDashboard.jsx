@@ -77,14 +77,14 @@ export default function CustomerDashboard() {
           </table>
         </div>
         {recent.length === 0 && (
-          <div className="p-8 text-center text-charcoal/50">No orders yet. <Link to="/customer/medicines" className="text-primary">Browse medicines</Link>.</div>
+          <div className="p-8 text-center text-charcoal/50">No orders yet. <Link to="/medicines" className="text-primary">Browse medicines</Link>.</div>
         )}
       </div>
 
       <div className="rounded-xl border border-charcoal/10 bg-white p-6">
         <h3 className="font-fraunces font-semibold text-charcoal mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
-          <Link to="/customer/medicines" className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-sm font-medium hover:bg-primary/20 transition-colors">
+          <Link to="/medicines" className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-sm font-medium hover:bg-primary/20 transition-colors">
             Browse Medicines
           </Link>
           <Link to="/customer/prescriptions" className="rounded-lg border border-charcoal/20 px-4 py-2 text-sm font-medium hover:bg-charcoal/5 transition-colors">

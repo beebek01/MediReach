@@ -6,7 +6,7 @@
 
 @layer base {
   body {
-    @apply font-sans text-charcoal bg-cream antialiased;
+    @apply font-sans text-charcoal bg-cream antialiased overflow-x-hidden;
   }
   h1,
   h2,
@@ -16,29 +16,93 @@
   h6 {
     @apply font-fraunces;
   }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #faf8f3; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1; 
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; 
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/40;
+    box-shadow: theme('boxShadow.glass');
+  }
+  
+  .glass-dark {
+    @apply bg-charcoal/80 backdrop-blur-md border border-white/10;
+    box-shadow: theme('boxShadow.glass-dark');
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(to right, theme('colors.primary.DEFAULT'), theme('colors.secondary.DEFAULT'));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 /* Page enter animation */
 .page-enter {
-  animation: fadeUp 0.5s ease-out forwards;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(24px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 /* Card hover lift */
 .hover-lift {
-  @apply transition-all duration-300;
+  @apply transition-all duration-500 ease-out;
 }
 .hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(26, 31, 28, 0.12);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: theme('boxShadow.card-hover');
 }
+
+/* Smooth reveal utilities */
+.reveal-delay-100 { animation-delay: 100ms; }
+.reveal-delay-200 { animation-delay: 200ms; }
+.reveal-delay-300 { animation-delay: 300ms; }
+
+/* Animated Underline Hover Effect */
+.hover-underline-animation {
+  position: relative;
+}
+
+.hover-underline-animation::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #059669; /* Emerald 600 (primary) */
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+.hover-underline-animation:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+

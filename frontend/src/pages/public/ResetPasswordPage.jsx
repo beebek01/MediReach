@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { api } from "../../services/api";
 import { useToast } from "../../context/ToastContext";
+import logo from '../../assets/images/logo.png';
 
 /* ── SVG Icons ─────────────────────────────────────────────────── */
 const ShieldIcon = () => (
@@ -247,8 +248,8 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex">
       {/* ── Left Panel ─────────────────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 bg-charcoal text-cream flex-col justify-between p-10">
-        <Link to="/" className="font-fraunces text-2xl font-semibold italic">
-          MediReach
+        <Link to="/" className="inline-block">
+          <img src={logo} alt="MediReach Logo" className="h-12 w-auto bg-white p-2 rounded-2xl shadow-sm" />
         </Link>
         <div>
           <p className="font-fraunces text-3xl font-semibold leading-snug">
@@ -288,9 +289,9 @@ export default function ResetPasswordPage() {
           {/* Mobile logo */}
           <Link
             to="/"
-            className="lg:hidden font-fraunces text-xl font-semibold italic text-charcoal mb-6 inline-block"
+            className="lg:hidden mb-6 inline-block"
           >
-            MediReach
+            <img src={logo} alt="MediReach Logo" className="h-10 w-auto bg-white p-2 rounded-2xl shadow-sm" />
           </Link>
 
           {success ? (

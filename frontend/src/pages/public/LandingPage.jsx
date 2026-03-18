@@ -6,7 +6,7 @@ import L from 'leaflet';
 import StatCard from '../../components/ui/StatCard';
 import Footer from "../../components/layout/Footer";
 import api from '../../services/api';
-import logo from '../../assets/images/logo.png';
+import logo from '../../assets/images/logo2.png';
 import heroVideo from '../../assets/videos/hero-video.mp4';
 
 // Fix for default marker icons in Leaflet with Webpack/Vite

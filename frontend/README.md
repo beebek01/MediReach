@@ -39,6 +39,7 @@ npm run preview   # preview production build
 ## Routes
 
 ### Public
+
 - `/` — Landing (hero, stats, features, CTA)
 - `/login` — Login (email/password + Google/Apple OAuth)
 - `/register` — 3-step registration wizard
@@ -46,6 +47,7 @@ npm run preview   # preview production build
 - `/reset-password` — Enter OTP and set new password
 
 ### Customer (`/customer/*`)
+
 - `/customer` — Dashboard (stats, recent orders, quick actions)
 - `/customer/medicines` — Medicine catalog (search, filter, sort)
 - `/customer/medicines/:id` — Medicine detail + alternatives
@@ -56,6 +58,7 @@ npm run preview   # preview production build
 - `/customer/profile` — Profile, address, password, notifications
 
 ### Pharmacist (`/pharmacist/*`)
+
 - `/pharmacist` — Dashboard (verify queue, low stock)
 - `/pharmacist/inventory` — Inventory table + add/edit medicine modal
 - `/pharmacist/verify` — Verify prescriptions (approve/reject + reason)
@@ -63,6 +66,7 @@ npm run preview   # preview production build
 - `/pharmacist/profile` — Profile settings
 
 ### Admin (`/admin/*`)
+
 - `/admin` — Dashboard (6 stat cards, activity feed)
 - `/admin/analytics` — Charts (weekly sales, donut, top medicines, revenue)
 - `/admin/users` — User management (Customers / Pharmacists tabs, suspend/delete, add pharmacist)

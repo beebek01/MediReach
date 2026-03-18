@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from '../../assets/images/logo.png';
+import logo from "../../assets/images/logo2.png";
 
 const footerLinks = {
   company: [
@@ -32,8 +32,15 @@ export default function Footer({ variant = "light" }) {
       <div className="max-w-6xl mx-auto px-4 py-10 lg:py-12 relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-1 sm:col-span-2 md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <Link to="/" className="inline-block mb-3 transition-transform hover:scale-105">
-              <img src={logo} alt="MediReach Logo" className="h-16 sm:h-20 w-auto bg-white p-2 rounded-2xl shadow-sm" />
+            <Link
+              to="/"
+              className="inline-block mb-3 transition-transform hover:scale-105"
+            >
+              <img
+                src={logo}
+                alt="MediReach Logo"
+                className="h-16 sm:h-20 w-auto bg-white p-2 rounded-2xl shadow-sm"
+              />
             </Link>
             <p
               className={`mt-2 text-sm ${isDark ? "text-cream/70" : "text-charcoal/60"}`}

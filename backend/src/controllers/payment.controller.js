@@ -2,37 +2,40 @@
  * Payment Controller — HTTP handlers for /api/payments
  */
 
-const paymentService = require('../services/payment.service');
-const { success } = require('../utils/response');
+const paymentService = require("../services/payment.service");
+const { success } = require("../utils/response");
 
 const paymentController = {
-  /* ─────────────────────────────── eSewa ─────────────────────────── */
+  /* ─────────────────────────────── IME Pay ───────────────────────── */
 
   /**
-   * POST /api/payments/esewa/initiate
+   * POST /api/payments/imepay/initiate
    * Body: { orderId }
-   * Returns form data for frontend to submit to eSewa.
+   * Returns form data for frontend to submit to IME Pay.
    */
-  async initiateEsewa(req, res, next) {
+  async initiateImepay(req, res, next) {
     try {
       const { orderId } = req.body;
-      const result = await paymentService.initiateEsewa(orderId, req.user.userId);
-      return success(res, result, 'eSewa payment initiated');
+      const result = await paymentService.initiateImepay(
+        orderId,
+        req.user.userId,
+      );
+      return success(res, result, "IME Pay payment initiated");
     } catch (err) {
       next(err);
     }
   },
 
   /**
-   * POST /api/payments/esewa/verify
-   * Body: { data }  (base64-encoded eSewa response)
-   * Verifies the eSewa payment and updates order status.
+   * POST /api/payments/imepay/verify
+   * Body: { responseData }  (IME Pay response data)
+   * Verifies the IME Pay payment and updates order status.
    */
-  async verifyEsewa(req, res, next) {
+  async verifyImepay(req, res, next) {
     try {
-      const { data } = req.body;
-      const result = await paymentService.verifyEsewa(data);
-      return success(res, result, 'eSewa payment verified');
+      const { responseData } = req.body;
+      const result = await paymentService.verifyImepay(responseData);
+      return success(res, result, "IME Pay payment verified");
     } catch (err) {
       next(err);
     }
@@ -46,7 +49,9 @@ const paymentController = {
    */
   async getOrderPayments(req, res, next) {
     try {
-      const payments = await paymentService.getOrderPayments(req.params.orderId);
+      const payments = await paymentService.getOrderPayments(
+        req.params.orderId,
+      );
       return success(res, { payments });
     } catch (err) {
       next(err);

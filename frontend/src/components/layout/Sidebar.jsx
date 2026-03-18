@@ -3,8 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../ui/Avatar";
 import { ROLES } from "../../data/constants";
-import logo from '../../assets/images/logo.png';
-
+import logo from "../../assets/images/logo2.png";
 
 const pharmacistNav = [
   { to: "/pharmacist", label: "Dashboard", icon: "📊" },
@@ -27,7 +26,6 @@ const adminNav = [
   { to: "/admin/orders", label: "All Orders", icon: "📋" },
   { to: "/admin/profile", label: "Profile", icon: "👤" },
 ];
-
 
 function getNav(role) {
   if (role === ROLES.ADMIN) return adminNav;
@@ -73,7 +71,11 @@ export default function Sidebar({ badgeCounts = {} }) {
       >
         <div className="flex items-center justify-between p-4 border-b border-white/10 bg-charcoal">
           <Link to={base} className="flex items-center shrink-0">
-            <img src={logo} alt="MediReach Logo" className="h-16 sm:h-20 w-auto bg-white p-2 rounded-2xl shadow-sm" />
+            <img
+              src={logo}
+              alt="MediReach Logo"
+              className="h-16 sm:h-20 w-auto bg-white p-2 rounded-2xl shadow-sm"
+            />
           </Link>
           <button
             type="button"
@@ -127,7 +129,9 @@ export default function Sidebar({ badgeCounts = {} }) {
           >
             <Avatar name={user.name} size="sm" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-cream truncate">{user.name}</p>
+              <p className="text-sm font-medium text-cream truncate">
+                {user.name}
+              </p>
               <p className="text-xs text-cream/60 truncate">{user.email}</p>
             </div>
           </Link>

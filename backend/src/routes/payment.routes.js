@@ -1,9 +1,11 @@
 /**
  * Payment Routes — /api/payments
  *
+ * GET    /esewa/success         — public: eSewa success callback (su)
+ * GET    /esewa/failure         — public: eSewa failure callback (fu)
  * POST   /esewa/initiate        — customer: get eSewa form data
- * GET    /esewa/verify          — callback verification via encoded data
- * GET    /order/:orderId       — authenticated: get payment records for order
+ * GET    /esewa/verify          — authenticated/manual verify via encoded data
+ * GET    /order/:orderId        — authenticated: get payment records for order
  */
 
 const { Router } = require('express');
@@ -13,9 +15,14 @@ const authorize = require('../middlewares/authorize');
 const validate = require('../middlewares/validate');
 const {
   initiatePaymentSchema,
+  verifyEsewaSchema,
 } = require('../validators/cart.validator');
 
 const router = Router();
+
+// eSewa callbacks (must be public so provider can reach these URLs)
+router.get('/esewa/success', paymentController.esewaSuccessCallback);
+router.get('/esewa/failure', paymentController.esewaFailureCallback);
 
 router.use(authenticate);
 
@@ -29,6 +36,7 @@ router.post(
 router.get(
   '/esewa/verify',
   authorize('customer'),
+  validate(verifyEsewaSchema),
   paymentController.verifyEsewa
 );
 

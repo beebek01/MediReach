@@ -3,6 +3,7 @@ require('dotenv').config();
 module.exports = {
   port: parseInt(process.env.PORT, 10) || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
+  serverUrl: process.env.SERVER_URL || `http://localhost:${parseInt(process.env.PORT, 10) || 4000}`,
 
   db: {
     host: process.env.DB_HOST || 'localhost',
@@ -37,12 +38,12 @@ module.exports = {
   // ── eSewa ────────────────────────────────────────────────────────────
   esewa: {
     mock: process.env.ESEWA_MOCK === 'true',
-    merchantId: process.env.ESEWA_MERCHANT_ID || 'EPAYTEST',
     productCode: process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST',
+    successPath: process.env.ESEWA_SUCCESS_PATH || '/api/payments/esewa/success',
+    failurePath: process.env.ESEWA_FAILURE_PATH || '/api/payments/esewa/failure',
     secretKey: process.env.ESEWA_SECRET_KEY || '8g7h39H6Bh7973GF',
-    initiateUrl: process.env.ESEWA_INITIATE_URL || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form',
-    verifyUrl: process.env.ESEWA_VERIFY_URL || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form',
-    statusUrl: process.env.ESEWA_STATUS_URL || 'https://rc.esewa.com.np/api/epay/transaction/status/',
+    initiateUrl: process.env.ESEWA_INITIATE_URL || 'https://uat.esewa.com.np/epay/main',
+    verifyUrl: process.env.ESEWA_VERIFY_URL || 'https://uat.esewa.com.np/api/epay/transaction/status/',
   },
 
   // ── Google OAuth 2.0 ──────────────────────────────────────────────

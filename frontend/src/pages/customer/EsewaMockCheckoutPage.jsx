@@ -3,34 +3,42 @@ import { useSearchParams } from 'react-router-dom';
 export default function EsewaMockCheckoutPage() {
   const [searchParams] = useSearchParams();
 
-  // eSewa v2 signature-based form fields
   const amount = searchParams.get('amount') || '0';
-  const totalAmount = searchParams.get('total_amount') || '0';
+  const taxAmount = searchParams.get('tax_amount') || '0';
+  const totalAmount = searchParams.get('total_amount') || amount;
   const transactionUuid = searchParams.get('transaction_uuid') || '';
-  const productCode = searchParams.get('product_code') || '';
+  const productCode = searchParams.get('product_code') || 'EPAYTEST';
   const successUrl = searchParams.get('success_url') || '';
   const failureUrl = searchParams.get('failure_url') || '';
-  const signature = searchParams.get('signature') || '';
 
   const handleSimulateSuccess = () => {
-    // In real eSewa v2, they redirect with a 'data' param (base64 encoded JSON)
-    const transactionCode = 'MOCK-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    const mockData = {
+    const transactionCode = `MOCKREF${Date.now()}`;
+    const payload = {
       transaction_code: transactionCode,
       status: 'COMPLETE',
-      total_amount: totalAmount.replace(/,/g, ''),
+      total_amount: totalAmount,
       transaction_uuid: transactionUuid,
       product_code: productCode,
-      signature: 'MOCK_VERIFY_SIGNATURE', // Real verify would require HMAC-SHA256 from backend
-      signed_field_names: 'transaction_code,status,total_amount,transaction_uuid,product_code'
+      signed_field_names: 'transaction_code,status,total_amount,transaction_uuid,product_code,signed_field_names',
+      signature: 'MOCK_SIGNATURE',
     };
 
-    const encodedData = btoa(JSON.stringify(mockData));
-    window.location.href = `${successUrl}?data=${encodedData}`;
+    const url = new URL(successUrl, window.location.origin);
+    url.searchParams.set('data', btoa(JSON.stringify(payload)));
+    window.location.href = url.toString();
   };
 
   const handleSimulateFailure = () => {
-    window.location.href = failureUrl;
+    const payload = {
+      status: 'FAILED',
+      total_amount: totalAmount,
+      transaction_uuid: transactionUuid,
+      product_code: productCode,
+    };
+
+    const url = new URL(failureUrl, window.location.origin);
+    url.searchParams.set('data', btoa(JSON.stringify(payload)));
+    window.location.href = url.toString();
   };
 
   return (
@@ -46,8 +54,10 @@ export default function EsewaMockCheckoutPage() {
           <p className="text-gray-500 text-sm">Amount to pay</p>
           <p className="text-3xl font-bold text-gray-800 font-fraunces">Rs. {totalAmount}</p>
           <div className="text-xs text-gray-400">
-            <p>Product: {productCode}</p>
-            <p>Ref: {transactionUuid.split('-')[0]}</p>
+            <p>Product Code: {productCode}</p>
+            <p>Amount: {amount}</p>
+            <p>Tax: {taxAmount}</p>
+            <p>Transaction UUID: {transactionUuid}</p>
           </div>
         </div>
 
@@ -68,7 +78,7 @@ export default function EsewaMockCheckoutPage() {
 
         <p className="text-[10px] text-gray-400 italic">
           This is a mock eSewa gateway for MediReach development.
-          <br />Signature: {signature.substring(0, 10)}...
+          <br />It simulates ePay data-based redirect callbacks.
         </p>
       </div>
       

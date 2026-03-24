@@ -87,6 +87,9 @@ export default function MyOrdersPage() {
                     <td className="px-4 py-3 text-charcoal/70">{new Date(o.createdAt).toLocaleDateString()}</td>
                     <td className="px-4 py-3"><StatusBadge status={o.status} /></td>
                     <td className="px-4 py-3 space-x-2">
+                      <Link to={`/customer/orders/${o.id}`} className="text-primary font-medium hover:underline">
+                        View
+                      </Link>
                       <Link to={`/customer/track?order=${o.id}`} className="text-primary font-medium hover:underline">
                         Track
                       </Link>

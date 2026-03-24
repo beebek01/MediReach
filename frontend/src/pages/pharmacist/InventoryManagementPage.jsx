@@ -6,6 +6,11 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import api from '../../services/api';
 
+const formatDateOnly = (value) => {
+  if (!value) return '';
+  return String(value).slice(0, 10);
+};
+
 export default function InventoryManagementPage() {
   const { accessToken } = useAuth();
   const { addToast } = useToast();
@@ -43,7 +48,7 @@ export default function InventoryManagementPage() {
       category: m.category,
       price: String(m.price),
       stock: String(m.stock),
-      expiryDate: m.expiryDate || '',
+      expiryDate: formatDateOnly(m.expiryDate),
       requiresPrescription: m.requiresPrescription || false,
       description: m.description || '',
     });
@@ -132,7 +137,7 @@ export default function InventoryManagementPage() {
                   <td className="px-4 py-3">
                     {m.stock < 20 ? <Badge variant="amber">{m.stock} low</Badge> : m.stock}
                   </td>
-                  <td className="px-4 py-3 text-charcoal/70">{m.expiryDate || '—'}</td>
+                  <td className="px-4 py-3 text-charcoal/70">{formatDateOnly(m.expiryDate) || '—'}</td>
                   <td className="px-4 py-3">Rs. {m.price}</td>
                   <td className="px-4 py-3">
                     <button

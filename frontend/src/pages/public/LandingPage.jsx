@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import StatCard from '../../components/ui/StatCard';
 import Footer from "../../components/layout/Footer";
 import api from '../../services/api';
-import logo from '../../assets/images/logo2.png';
+import logo from '../../assets/images/logo.png';
 import heroVideo from '../../assets/videos/hero-video.mp4';
 
 // Fix for default marker icons in Leaflet with Webpack/Vite

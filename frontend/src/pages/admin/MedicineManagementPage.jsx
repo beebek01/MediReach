@@ -5,6 +5,11 @@ import { useToast } from "../../context/ToastContext";
 import Modal from "../../components/ui/Modal";
 import api from "../../services/api";
 
+const formatDateOnly = (value) => {
+  if (!value) return "";
+  return String(value).slice(0, 10);
+};
+
 export default function MedicineManagementPage() {
   const { accessToken } = useAuth();
   const { addToast } = useToast();
@@ -65,7 +70,7 @@ export default function MedicineManagementPage() {
       category: m.category,
       price: String(m.price),
       stock: String(m.stock),
-      expiryDate: m.expiryDate || "",
+      expiryDate: formatDateOnly(m.expiryDate),
       requiresPrescription: m.requiresPrescription || false,
       description: m.description || "",
     });
@@ -176,7 +181,7 @@ export default function MedicineManagementPage() {
                 <td className="px-4 py-3">Rs. {m.price}</td>
                 <td className="px-4 py-3">{m.stock}</td>
                 <td className="px-4 py-3 text-charcoal/70">
-                  {m.expiryDate || "—"}
+                  {formatDateOnly(m.expiryDate) || "—"}
                 </td>
                 <td className="px-4 py-3">
                   {m.requiresPrescription ? "Yes" : "No"}

@@ -17,28 +17,28 @@ export default function CustomerDashboard() {
   });
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const totalSpent = Number(stats.totalSpent || 0);
 
   useEffect(() => {
     if (!accessToken) {
-      console.log("No access token available");
+      setLoading(false);
       return;
     }
-
-    console.log("Fetching customer stats for user:", user?.email, user?.id);
 
     api
       .getCustomerStats(accessToken)
       .then((res) => {
-        console.log("Customer stats response:", res);
-        setStats(res.data.stats);
-        setRecent(res.data.recent || []);
+        setStats((prev) => ({
+          ...prev,
+          ...(res?.data?.stats || {}),
+        }));
+        setRecent(res?.data?.recent || []);
       })
       .catch((err) => {
-        console.error("Failed to load customer stats:", err);
         addToast("Failed to load dashboard stats", "error");
       })
       .finally(() => setLoading(false));
-  }, [accessToken, user, addToast]);
+  }, [accessToken, addToast]);
 
   return (
     <div className="space-y-8 page-enter">
@@ -57,7 +57,7 @@ export default function CustomerDashboard() {
         <StatCard title="In Transit" value={stats.inTransit} icon="🚚" />
         <StatCard
           title="Total Spent"
-          value={`Rs. ${stats.totalSpent.toLocaleString()}`}
+          value={`Rs. ${totalSpent.toLocaleString()}`}
           icon="💰"
         />
       </div>
@@ -100,16 +100,14 @@ export default function CustomerDashboard() {
                   <td className="px-4 py-3 text-charcoal/70">
                     {(o.items || []).map((i) => i.name).join(", ")}
                   </td>
-                  <td className="px-4 py-3">
-                    Rs. {(o.total + o.deliveryFee).toLocaleString()}
-                  </td>
+                  <td className="px-4 py-3">Rs. {o.total.toLocaleString()}</td>
                   <td className="px-4 py-3 text-charcoal/70">{o.date}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={o.status} />
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      to={`/customer/orders?order=${o.id}`}
+                      to={`/customer/orders/${o.id}`}
                       className="text-primary font-medium hover:underline"
                     >
                       View

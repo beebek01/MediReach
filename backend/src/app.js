@@ -26,7 +26,6 @@ app.use(
 // ── Body parsers ─────────────────────────────────────────────────────────────
 // Chat endpoint needs larger limit for base64 audio/images — must come BEFORE the global parser
 app.use('/api/chat', express.json({ limit: '5mb' }));
-app.use('/api/payments/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10kb' }));        // small payloads only (prevents DoS)
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

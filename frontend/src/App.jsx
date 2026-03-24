@@ -119,6 +119,11 @@ const router = createBrowserRouter([
         handle: { title: "My Orders" },
       },
       {
+        path: "orders/:id",
+        element: <OrderTrackingPage />,
+        handle: { title: "Order Details" },
+      },
+      {
         path: "profile",
         element: <CustomerProfilePage />,
         handle: { title: "Profile" },

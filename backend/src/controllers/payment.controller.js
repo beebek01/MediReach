@@ -4,6 +4,7 @@
 
 const paymentService = require('../services/payment.service');
 const { success } = require('../utils/response');
+const config = require('../config');
 
 const paymentController = {
   /* ─────────────────────────────── eSewa ───────────────────────────── */
@@ -33,6 +34,63 @@ const paymentController = {
       return success(res, result, 'eSewa payment verified');
     } catch (err) {
       next(err);
+    }
+  },
+
+  /**
+   * GET /api/payments/esewa/success
+   * Query: data (base64 JSON from ePay)
+   */
+  async esewaSuccessCallback(req, res) {
+    const { data } = req.query;
+    try {
+      const result = await paymentService.verifyEsewa(data);
+      const redirectUrl = new URL('/customer/payment/esewa/success', config.clientUrl);
+      redirectUrl.searchParams.set('orderId', result.orderId);
+      if (result.transactionUuid) {
+        redirectUrl.searchParams.set('transaction_uuid', result.transactionUuid);
+      }
+      return res.redirect(302, redirectUrl.toString());
+    } catch (error) {
+      const redirectUrl = new URL('/customer/payment/esewa/failure', config.clientUrl);
+      redirectUrl.searchParams.set('transaction_uuid', '');
+      redirectUrl.searchParams.set('message', error.message || 'Payment verification failed');
+      return res.redirect(302, redirectUrl.toString());
+    }
+  },
+
+  /**
+   * GET /api/payments/esewa/failure
+   * Query: data (optional base64 JSON from ePay)
+   */
+  async esewaFailureCallback(req, res) {
+    const { data } = req.query;
+    try {
+      if (data) {
+        const decoded = JSON.parse(Buffer.from(data, 'base64').toString('utf-8'));
+        const transactionUuid = decoded.transaction_uuid || decoded.pid || '';
+        const totalAmount = decoded.total_amount || decoded.tAmt || null;
+        if (transactionUuid) {
+          const result = await paymentService.markEsewaFailed({
+            transactionUuid,
+            totalAmount,
+            reason: 'Payment failed or cancelled at eSewa',
+          });
+          const redirectUrl = new URL('/customer/payment/esewa/failure', config.clientUrl);
+          redirectUrl.searchParams.set('orderId', result.orderId);
+          redirectUrl.searchParams.set('transaction_uuid', transactionUuid);
+          return res.redirect(302, redirectUrl.toString());
+        }
+      }
+
+      const redirectUrl = new URL('/customer/payment/esewa/failure', config.clientUrl);
+      redirectUrl.searchParams.set('transaction_uuid', '');
+      return res.redirect(302, redirectUrl.toString());
+    } catch (error) {
+      const redirectUrl = new URL('/customer/payment/esewa/failure', config.clientUrl);
+      redirectUrl.searchParams.set('transaction_uuid', '');
+      redirectUrl.searchParams.set('message', error.message || 'Payment failed');
+      return res.redirect(302, redirectUrl.toString());
     }
   },
 

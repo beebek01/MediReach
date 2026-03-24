@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { api } from "../../services/api";
 import { useToast } from "../../context/ToastContext";
-import logo from '../../assets/images/logo2.png';
+import logo from '../../assets/images/logo.png';
 
 /* ── SVG Icons ─────────────────────────────────────────────────── */
 const ShieldIcon = () => (

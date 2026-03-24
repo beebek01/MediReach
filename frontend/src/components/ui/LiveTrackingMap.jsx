@@ -121,7 +121,6 @@ const DEFAULT_CENTER = [27.7172, 85.324];
 const PHARMACY_LOCATION = [27.7085, 85.3206]; // Thamel area
 
 export default function LiveTrackingMap({
-  orderId,
   orderStatus,
   deliveryLat,
   deliveryLng,

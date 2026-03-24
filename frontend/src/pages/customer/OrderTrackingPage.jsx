@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import LiveTrackingMap from '../../components/ui/LiveTrackingMap';
@@ -12,7 +13,8 @@ export default function OrderTrackingPage() {
   const { accessToken } = useAuth();
   const { addToast } = useToast();
   const [searchParams] = useSearchParams();
-  const orderId = searchParams.get('order');
+  const { id: orderIdFromPath } = useParams();
+  const orderId = orderIdFromPath || searchParams.get('order');
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +89,7 @@ export default function OrderTrackingPage() {
   return (
     <div className="space-y-8 page-enter">
       <div>
-        <h2 className="font-fraunces text-xl font-semibold text-charcoal">Track order</h2>
+        <h2 className="font-fraunces text-xl font-semibold text-charcoal">Order details</h2>
         {order && <p className="text-charcoal/60 text-sm mt-1">Order #{order.orderNumber}</p>}
       </div>
 

@@ -293,6 +293,101 @@ const sendPasswordChangedEmail = async (to, name) => {
   await sendEmail({ to, subject: 'Security Alert: Your MediReach password was changed', html });
 };
 
+function renderTableRows(rows, renderer) {
+  return rows.map(renderer).join('');
+}
+
+/**
+ * Send inventory alert email to admin/pharmacist.
+ * Supports low stock + near-expiry alerts in one email.
+ * @param {string} to
+ * @param {{lowStock?: Array<{name:string, stock:number}>, nearExpiry?: Array<{name:string, expiryDate:string, daysLeft:number}>}} payload
+ */
+const sendInventoryAlertEmail = async (to, payload = {}) => {
+  const lowStock = payload.lowStock || [];
+  const nearExpiry = payload.nearExpiry || [];
+  if (!lowStock.length && !nearExpiry.length) return;
+
+  const lowStockSection = lowStock.length
+    ? `
+      <div style="background:#fff;border-radius:10px;padding:20px 24px;border:1px solid #e5e7eb;margin-bottom:14px;">
+        <h2 style="font-size:16px;color:#111827;margin:0 0 8px;">Low Stock Medicines</h2>
+        <p style="color:#374151;line-height:1.5;margin:0 0 10px;">
+          These medicines are below the stock threshold and need restocking.
+        </p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead>
+            <tr style="color:#6b7280;font-size:12px;text-transform:uppercase;">
+              <th style="text-align:left;padding-bottom:8px;border-bottom:2px solid #e5e7eb;">Medicine</th>
+              <th style="text-align:right;padding-bottom:8px;border-bottom:2px solid #e5e7eb;">Stock Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderTableRows(
+              lowStock,
+              (medicine) => `
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;">${medicine.name}</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;text-align:right;">${medicine.stock}</td>
+                </tr>`
+            )}
+          </tbody>
+        </table>
+      </div>`
+    : '';
+
+  const nearExpirySection = nearExpiry.length
+    ? `
+      <div style="background:#fff;border-radius:10px;padding:20px 24px;border:1px solid #e5e7eb;">
+        <h2 style="font-size:16px;color:#111827;margin:0 0 8px;">Expiry Alert (Within 30 Days)</h2>
+        <p style="color:#374151;line-height:1.5;margin:0 0 10px;">
+          These medicines are approaching expiry and should be reviewed.
+        </p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead>
+            <tr style="color:#6b7280;font-size:12px;text-transform:uppercase;">
+              <th style="text-align:left;padding-bottom:8px;border-bottom:2px solid #e5e7eb;">Medicine</th>
+              <th style="text-align:left;padding-bottom:8px;border-bottom:2px solid #e5e7eb;">Expiry Date</th>
+              <th style="text-align:right;padding-bottom:8px;border-bottom:2px solid #e5e7eb;">Days Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderTableRows(
+              nearExpiry,
+              (medicine) => `
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;">${medicine.name}</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;">${medicine.expiryDate}</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;text-align:right;">${medicine.daysLeft}</td>
+                </tr>`
+            )}
+          </tbody>
+        </table>
+      </div>`
+    : '';
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#f9fafb;padding:24px;border-radius:12px;">
+      <div style="background:#b45309;padding:18px 22px;border-radius:10px;margin-bottom:20px;text-align:center;">
+        <h1 style="color:#fff;margin:0;font-size:20px;">Inventory Alert ⚠️</h1>
+      </div>
+      ${lowStockSection}
+      ${nearExpirySection}
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+      <p style="font-size:12px;color:#999;text-align:center;">&copy; MediReach Online Pharmacy</p>
+    </div>
+  `;
+
+  await sendEmail({
+    to,
+    subject: 'MediReach — Inventory Alert',
+    html,
+  });
+};
+
+const sendLowStockAlertEmail = async (to, medicines = []) =>
+  sendInventoryAlertEmail(to, { lowStock: medicines });
+
 module.exports = {
   sendEmail,
   sendPasswordResetEmail,
@@ -302,5 +397,7 @@ module.exports = {
   sendWelcomeEmail,
   sendProfileUpdateEmail,
   sendPasswordChangedEmail,
+  sendInventoryAlertEmail,
+  sendLowStockAlertEmail,
 };
 

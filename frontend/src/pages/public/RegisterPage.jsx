@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useToast } from '../../context/ToastContext';
 import ProgressBar from "../../components/ui/ProgressBar";
 import logo from '../../assets/images/logo.png';
-import doctorImg from '../../assets/images/doctor.jpg';
+import authVideo from '../../assets/videos/new-video.mp4';
 
 const STEPS = [
   { id: 1, title: "Personal Info", fields: ["name", "email", "password"] },
@@ -234,15 +234,19 @@ export default function RegisterPage() {
     <div className="min-h-screen flex">
       {/* ── Left Panel ──────────────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 bg-charcoal text-cream flex-col justify-between p-12 relative overflow-hidden">
-        {/* Full screen background image */}
-        <img 
-          src={doctorImg} 
-          alt="Doctor" 
+        {/* Full screen background video */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
           className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
-        />
+        >
+          <source src={authVideo} type="video/mp4" />
+        </video>
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent z-0"></div>
 
-        <Link to="/" className="inline-block relative z-10 transition-transform hover:scale-105 duration-300">
+        <Link to="/" className="inline-block relative z-10 -mt-2">
           <img src={logo} alt="MediReach Logo" className="h-16 md:h-20 w-auto" />
         </Link>
         <div className="relative z-10 flex-1 flex flex-col justify-end pb-12">
@@ -313,7 +317,7 @@ export default function RegisterPage() {
           {/* Mobile logo */}
           <Link
             to="/"
-            className="lg:hidden mb-8 flex justify-center w-full transition-transform hover:scale-105"
+            className="lg:hidden mb-6 -mt-1 flex justify-center w-full"
           >
             <img src={logo} alt="MediReach Logo" className="h-12 sm:h-14 w-auto" />
           </Link>

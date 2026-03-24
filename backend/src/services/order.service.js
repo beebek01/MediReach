@@ -6,7 +6,11 @@ const { getClient, pool } = require('../database/db');
 const cartRepository = require('../repositories/cart.repository');
 const orderRepository = require('../repositories/order.repository');
 const { BadRequestError, NotFoundError, ForbiddenError } = require('../utils/errors');
-const { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } = require('../utils/email');
+const {
+  sendOrderConfirmationEmail,
+  sendOrderStatusUpdateEmail,
+  sendInventoryAlertEmail,
+} = require('../utils/email');
 
 const TAX_RATE = 0.13;
 const DELIVERY_FEE = 100;
@@ -51,6 +55,63 @@ function formatOrderItem(row) {
     imageUrl: row.image_url,
     category: row.category,
   };
+}
+
+function formatDateOnly(value) {
+  if (!value) return null;
+  if (typeof value === 'string') return value.slice(0, 10);
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function getDaysUntilDate(value) {
+  if (!value) return null;
+  const target = new Date(`${formatDateOnly(value)}T00:00:00`);
+  const today = new Date();
+  const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diffMs = target.getTime() - startToday.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+}
+
+function buildInventoryAlertPayload(medicines = []) {
+  const lowStock = medicines
+    .filter((medicine) => Number(medicine.stock) <= 20)
+    .map((medicine) => ({ name: medicine.name, stock: medicine.stock }));
+
+  const nearExpiry = medicines
+    .map((medicine) => {
+      const expiryDate = formatDateOnly(medicine.expiry_date);
+      const daysLeft = getDaysUntilDate(expiryDate);
+      return { name: medicine.name, expiryDate, daysLeft };
+    })
+    .filter((medicine) => medicine.expiryDate && medicine.daysLeft != null && medicine.daysLeft >= 0 && medicine.daysLeft <= 30);
+
+  return { lowStock, nearExpiry };
+}
+
+async function notifyInventoryAlertsToStaff(payload = {}) {
+  if (!payload.lowStock?.length && !payload.nearExpiry?.length) return;
+
+  const { rows: recipients } = await pool.query(
+    `SELECT DISTINCT email
+     FROM users
+     WHERE role IN ('admin', 'pharmacist')
+       AND (status = 'active' OR status IS NULL)
+       AND email IS NOT NULL`
+  );
+
+  if (!recipients.length) return;
+
+  const results = await Promise.allSettled(
+    recipients.map((recipient) =>
+      sendInventoryAlertEmail(recipient.email, payload)
+    )
+  );
+
+  results
+    .filter((result) => result.status === 'rejected')
+    .forEach((result) => {
+      console.error('Inventory alert email failed:', result.reason?.message || result.reason);
+    });
 }
 
 const orderService = {
@@ -210,6 +271,27 @@ const orderService = {
           }
         })
         .catch((emailErr) => console.error('Order confirmation email failed:', emailErr.message));
+
+      // Fire-and-forget low-stock alert to admin + pharmacists
+      const orderedMedicineIds = [
+        ...new Set(orderItems.map((item) => item.medicineId)),
+      ];
+      pool
+        .query(
+          `SELECT name, stock, expiry_date
+           FROM medicines
+           WHERE id = ANY($1::uuid[])
+             AND (
+               stock <= 20
+               OR (expiry_date IS NOT NULL AND expiry_date >= CURRENT_DATE AND expiry_date <= CURRENT_DATE + INTERVAL '30 days')
+             )
+           ORDER BY stock ASC, expiry_date ASC`,
+          [orderedMedicineIds]
+        )
+        .then(({ rows }) => notifyInventoryAlertsToStaff(buildInventoryAlertPayload(rows)))
+        .catch((alertErr) =>
+          console.error('Inventory alert email failed:', alertErr.message)
+        );
 
       return formattedOrder;
     } catch (err) {

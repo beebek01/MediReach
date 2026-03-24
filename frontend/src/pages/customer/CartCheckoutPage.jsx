@@ -406,7 +406,7 @@ export default function CartCheckoutPage() {
               disabled={placing}
               className="rounded-lg bg-primary px-6 py-2.5 font-medium text-white hover:bg-primary-dark disabled:opacity-50"
             >
-              {placing ? 'Placing order…' : 'Place order'}
+              {placing ? 'Placing order…' : paymentMethod === 'esewa' ? 'Pay with eSewa' : 'Place order'}
             </button>
           </div>
         </>

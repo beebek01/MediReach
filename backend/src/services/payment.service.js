@@ -1,38 +1,24 @@
 /**
- * Payment Service — business logic for COD and eSewa payments.
+ * Payment Service — business logic for COD and eSewa ePay payments.
  *
- * eSewa flow:
- *   1. Frontend calls POST /api/payments/esewa/initiate
- *      → backend returns signed form data for eSewa checkout
- *   2. Frontend submits form to eSewa checkout URL
- *   3. eSewa redirects to success/failure URL with base64-encoded `data` param
- *   4. Frontend calls GET /api/payments/esewa/verify?data=...
- *      → backend verifies signature and transaction status
- *
- * COD flow:
- *   1. Checkout sets paymentMethod = 'cod' and paymentStatus = 'pending'
- *   2. On delivery, admin marks order delivered → payment status becomes 'paid'
+ * eSewa ePay flow:
+ *   1. Frontend calls POST /api/payments/esewa/initiate with orderId
+ *   2. Backend returns signed ePay form fields
+ *   3. Frontend auto-submits form to eSewa hosted checkout
+ *   4. eSewa redirects to success_url / failure_url
+ *   5. Backend verifies transaction against eSewa status API
+ *   6. Backend updates payment + order status
  */
 
-const crypto = require('crypto');
 const config = require('../config');
 const paymentRepository = require('../repositories/payment.repository');
 const orderRepository = require('../repositories/order.repository');
+const esewaService = require('./esewa.service');
 const {
   BadRequestError,
   NotFoundError,
   ConflictError,
 } = require('../utils/errors');
-
-/* ================================================================
-   HELPER: generate eSewa Signature
-   ================================================================ */
-function generateEsewaSignature(secretKey, dataString) {
-  return crypto
-    .createHmac('sha256', secretKey)
-    .update(dataString)
-    .digest('base64');
-}
 
 /* ================================================================
    HELPER: generate idempotency key for a payment attempt
@@ -41,8 +27,12 @@ function makeIdempotencyKey(orderId, method) {
   return `${orderId}:${method}:${Date.now()}`;
 }
 
-function parseAmount(value) {
-  return Number.parseFloat(value).toFixed(2);
+function generateTransactionUuid(orderId) {
+  return `ESW-${orderId.slice(0, 8)}-${Date.now()}`;
+}
+
+function buildCallbackUrl(path) {
+  return new URL(path, config.serverUrl).toString();
 }
 
 const paymentService = {
@@ -78,8 +68,8 @@ const paymentService = {
   /* ──────────────────────────────────────────────── eSewa ───────── */
 
   /**
-   * Initiate eSewa payment.
-   * Generates signature and returns form data for frontend to submit.
+    * Initiate eSewa ePay payment.
+    * Returns signed payload fields required by https://uat.esewa.com.np/epay/main
    */
   async initiateEsewa(orderId, userId) {
     const order = await orderRepository.findById(orderId);
@@ -92,149 +82,179 @@ const paymentService = {
       throw new ConflictError('Order already paid');
     }
 
-    const { productCode, secretKey, initiateUrl } = config.esewa;
-    const transactionUuid = `${order.id.slice(0, 8)}-${Date.now()}`;
-    const totalAmount = parseAmount(order.grand_total);
+    const existingPayments = await paymentRepository.findByOrderId(orderId);
+    const successfulPayment = existingPayments.find((payment) => payment.status === 'success');
+    if (successfulPayment) {
+      throw new ConflictError('Order already paid');
+    }
 
-    // Generate Signature: total_amount=X,transaction_uuid=Y,product_code=Z
-    const dataString = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${productCode}`;
-    const signature = generateEsewaSignature(secretKey, dataString);
+    const existingPending = existingPayments.find(
+      (payment) =>
+        payment.method === 'esewa' &&
+        payment.status === 'pending' &&
+        payment.transaction_id
+    );
 
-    // Persist pending payment
-    const idempotencyKey = makeIdempotencyKey(orderId, 'esewa');
-    await paymentRepository.create({
-      orderId,
-      method: 'esewa',
-      amount: order.grand_total,
-      status: 'pending',
-      transactionId: transactionUuid,
-      idempotencyKey,
+    const transactionUuid =
+      existingPending?.transaction_id || generateTransactionUuid(order.id);
+
+    if (!existingPending) {
+      const idempotencyKey = makeIdempotencyKey(orderId, 'esewa');
+      await paymentRepository.create({
+        orderId,
+        method: 'esewa',
+        amount: order.grand_total,
+        status: 'pending',
+        transactionId: transactionUuid,
+        idempotencyKey,
+      });
+    }
+
+    const successUrl = buildCallbackUrl(config.esewa.successPath);
+    const failureUrl = buildCallbackUrl(config.esewa.failurePath);
+    const formData = esewaService.buildEsewaFormData({
+      totalAmount: order.grand_total,
+      transactionUuid,
+      successUrl,
+      failureUrl,
     });
 
     if (config.esewa.mock) {
       return {
         paymentUrl: `${config.clientUrl}/customer/payment/esewa/mock-checkout`,
-        formData: {
-          amount: totalAmount,
-          tax_amount: '0',
-          total_amount: totalAmount,
-          transaction_uuid: transactionUuid,
-          product_code: productCode,
-          product_service_charge: '0',
-          product_delivery_charge: '0',
-          success_url: `${config.clientUrl}/customer/payment/esewa/success`,
-          failure_url: `${config.clientUrl}/customer/payment/esewa/failure`,
-          signed_field_names: 'total_amount,transaction_uuid,product_code',
-          signature,
-        },
+        formData,
         mock: true,
       };
     }
 
     return {
-      paymentUrl: initiateUrl,
-      formData: {
-        amount: totalAmount,
-        tax_amount: '0',
-        total_amount: totalAmount,
-        transaction_uuid: transactionUuid,
-        product_code: productCode,
-        product_service_charge: '0',
-        product_delivery_charge: '0',
-        success_url: `${config.clientUrl}/customer/payment/esewa/success`,
-        failure_url: `${config.clientUrl}/customer/payment/esewa/failure`,
-        signed_field_names: 'total_amount,transaction_uuid,product_code',
-        signature,
-      },
+      paymentUrl: config.esewa.initiateUrl,
+      formData,
     };
   },
 
   /**
-   * Verify eSewa payment callback.
-   * eSewa redirects to success_url with a base64 encoded 'encodedData' string.
+   * Verify eSewa callback by checking provider-side transaction status.
+   * Accepts data from ePay callback or normalized fields from manual verify endpoint.
    */
-  async verifyEsewa(encodedData) {
-    let decoded;
-    try {
-      const json = Buffer.from(encodedData, 'base64').toString('utf-8');
-      decoded = JSON.parse(json);
-    } catch {
-      throw new BadRequestError('Invalid eSewa response data');
+  async verifyEsewaCallback({ transactionUuid, totalAmount, transactionCode }) {
+    if (!transactionUuid) {
+      throw new BadRequestError('Missing required transaction UUID');
     }
 
-    const {
-      transaction_uuid,
-      total_amount,
-      status,
-      signature,
-      transaction_code,
-      signed_field_names,
-    } = decoded;
-    const { productCode, secretKey } = config.esewa;
-
-    if (!transaction_uuid || !total_amount || !status || !signature) {
-      throw new BadRequestError('Incomplete eSewa response data');
-    }
-
-    const signedFieldNames =
-      signed_field_names ||
-      'transaction_code,status,total_amount,transaction_uuid,product_code';
-    const dataString =
-      `transaction_code=${transaction_code || ''},status=${status},total_amount=${total_amount},` +
-      `transaction_uuid=${transaction_uuid},product_code=${productCode},signed_field_names=${signedFieldNames}`;
-    const expectedSignature = generateEsewaSignature(secretKey, dataString);
-
-    if (signature !== expectedSignature && !config.esewa.mock) {
-      throw new BadRequestError('eSewa signature verification failed');
-    }
-
-    const payment = await paymentRepository.findByTransactionId(transaction_uuid);
+    const payment = await paymentRepository.findByTransactionId(transactionUuid);
     if (!payment) throw new NotFoundError('Payment record not found');
-    if (payment.status === 'success') return { message: 'Payment already verified', orderId: payment.order_id };
 
-    if (status === 'COMPLETE' || config.esewa.mock) {
-      if (!config.esewa.mock) {
-        const url = new URL(config.esewa.statusUrl);
-        url.searchParams.set('product_code', productCode);
-        url.searchParams.set('total_amount', total_amount);
-        url.searchParams.set('transaction_uuid', transaction_uuid);
+    const order = await orderRepository.findById(payment.order_id);
+    if (!order) throw new NotFoundError('Order not found for payment');
 
-        const statusRes = await fetch(url.toString(), {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-        });
+    if (payment.status === 'success') {
+      return {
+        message: 'Payment already verified',
+        orderId: payment.order_id,
+        transactionUuid,
+      };
+    }
 
-        if (!statusRes.ok) {
-          throw new BadRequestError('Unable to validate eSewa payment status');
-        }
-
-        const statusPayload = await statusRes.json().catch(() => null);
-        if (!statusPayload || statusPayload.status !== 'COMPLETE') {
-          throw new BadRequestError('eSewa transaction is not complete');
-        }
-      }
-
+    const expectedAmount = esewaService.normalizeMoney(order.grand_total);
+    const callbackAmount = esewaService.normalizeMoney(
+      totalAmount ?? order.grand_total
+    );
+    if (expectedAmount !== callbackAmount) {
       await paymentRepository.updateStatus(payment.id, {
-        status: 'success',
-        providerRef: transaction_code || transaction_uuid,
-        providerResponse: decoded,
+        status: 'failed',
+        providerRef: transactionCode,
+        providerResponse: {
+          reason: 'Amount mismatch',
+          expectedAmount,
+          callbackAmount,
+        },
       });
-      await orderRepository.updatePaymentStatus(payment.order_id, 'paid');
+      await orderRepository.updatePaymentStatus(order.id, 'failed');
+      throw new BadRequestError('Invalid payment amount');
+    }
 
-      const order = await orderRepository.findById(payment.order_id);
-      if (order && order.status === 'pending') {
-        await orderRepository.updateStatus(payment.order_id, 'verified');
-      }
+    let verificationResult = { isSuccess: true, raw: { mock: true } };
 
-      return { message: 'Payment verified successfully', orderId: payment.order_id };
+    if (!config.esewa.mock) {
+      verificationResult = await esewaService.verifyTransactionStatus({
+        productCode: config.esewa.productCode,
+        totalAmount: callbackAmount,
+        transactionUuid,
+      });
+    }
+
+    if (!verificationResult.isSuccess) {
+      await paymentRepository.updateStatus(payment.id, {
+        status: 'failed',
+        providerRef: transactionCode,
+        providerResponse: {
+          verification: verificationResult.raw,
+        },
+      });
+      await orderRepository.updatePaymentStatus(order.id, 'failed');
+      throw new BadRequestError('eSewa transaction verification failed');
     }
 
     await paymentRepository.updateStatus(payment.id, {
-      status: 'failed',
-      providerResponse: decoded,
+      status: 'success',
+      providerRef: transactionCode,
+      providerResponse: {
+        transactionUuid,
+        totalAmount: callbackAmount,
+        transactionCode,
+        verification: verificationResult.raw,
+      },
     });
-    await orderRepository.updatePaymentStatus(payment.order_id, 'failed');
-    throw new BadRequestError(`eSewa payment ${status}`);
+    await orderRepository.updatePaymentStatus(order.id, 'paid');
+
+    if (order.status === 'pending') {
+      await orderRepository.updateStatus(order.id, 'verified');
+    }
+
+    return {
+      message: 'Payment verified successfully',
+      orderId: order.id,
+      transactionUuid,
+    };
+  },
+
+  async markEsewaFailed({ transactionUuid, totalAmount, reason = 'Payment failed or cancelled' }) {
+    if (!transactionUuid) {
+      throw new BadRequestError('Missing required transaction UUID');
+    }
+
+    const payment = await paymentRepository.findByTransactionId(transactionUuid);
+    if (!payment) {
+      throw new NotFoundError('Payment record not found');
+    }
+
+    if (payment.status !== 'success') {
+      await paymentRepository.updateStatus(payment.id, {
+        status: 'failed',
+        providerResponse: {
+          transactionUuid,
+          totalAmount,
+          reason,
+        },
+      });
+      await orderRepository.updatePaymentStatus(payment.order_id, 'failed');
+    }
+
+    return { orderId: payment.order_id, message: reason };
+  },
+
+  async verifyEsewa(encodedData) {
+    const decoded = esewaService.decodeEsewaData(encodedData);
+    const transactionUuid = decoded.transaction_uuid || decoded.pid || decoded.oid;
+    const totalAmount = decoded.total_amount || decoded.tAmt || decoded.amt;
+    const transactionCode = decoded.transaction_code || decoded.refId;
+
+    return this.verifyEsewaCallback({
+      transactionUuid,
+      totalAmount,
+      transactionCode,
+    });
   },
 
   /* ──────────────────────────────────────────── Shared ──────────── */
